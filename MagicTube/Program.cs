@@ -1,8 +1,20 @@
+using MagicTube.Data;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddControllers();
+Log.Logger = new LoggerConfiguration().MinimumLevel.Debug().WriteTo.File("log/tubeLogs.txt").CreateLogger();
+builder.Services.AddDbContext<ApplicationDbContext>(option =>
+{
+    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
+});
+builder.Host.UseSerilog();
+builder.Services.AddControllers(option=>
+{
+    option.ReturnHttpNotAcceptable = true;
+}).AddNewtonsoftJson().AddXmlDataContractSerializerFormatters();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
