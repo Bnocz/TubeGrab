@@ -3,6 +3,7 @@ using MagicTube.Models;
 using MagicTube.Models.DTO;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MagicTube.Controllers
 {
@@ -19,9 +20,9 @@ namespace MagicTube.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public ActionResult <IEnumerable<VillaDTO>> GetVillas()
+        public async Task<ActionResult <IEnumerable<VillaDTO>>> GetVillas()
         {
-            return Ok(_db.Villas.ToList());
+            return Ok(await _db.Villas.ToListAsync());
             
         }
 
@@ -29,14 +30,14 @@ namespace MagicTube.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<VillaDTO> GetVilla(int id)
+        public async Task<ActionResult<VillaDTO>> GetVilla(int id)
 
         {
             if (id == 0)
             {
                 return BadRequest();
             }
-            var villa =_db.Villas.FirstOrDefault(u => u.Id==id);
+            var villa =await _db.Villas.FirstOrDefaultAsync(u => u.Id == id);
             if (villa == null)
             {
                 return NotFound();
@@ -44,22 +45,16 @@ namespace MagicTube.Controllers
             return Ok(villa);
         }
         [HttpPost]
-        public ActionResult<VillaDTO> CreateVilla([FromBody] VillaDTO villaDTO)
+        public async Task<ActionResult<VillaDTO>> CreateVilla([FromBody] VillaCreateDTO villaDTO)
         {
-            if (!ModelState.IsValid)
+            if (await _db.Villas.FirstOrDefaultAsync(u => u.Name.ToLower() == villaDTO.Name.ToLower()) != null)
             {
+                ModelState.AddModelError("CustomerError", "Villa Already Exists");
                 return BadRequest(ModelState);
-            }
-            {
-                
             }
             if (villaDTO == null)
             {
                 return BadRequest(villaDTO);
-            }
-            if (villaDTO.Id == 0)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
             }
             Villa model = new()
             {
@@ -72,33 +67,33 @@ namespace MagicTube.Controllers
                     Rate = villaDTO.Rate,
                     Sqft = villaDTO.Sqft
             };
-            _db.Villas.Add(model);
-            _db.SaveChanges();
+            await _db.Villas.AddAsync(model);
+            await _db.SaveChangesAsync();
 
-            return CreatedAtRoute("GetVilla", new { id = villaDTO.Id },villaDTO);
+            return CreatedAtRoute("GetVilla", new { id = model.Id },model);
         }
 
         [HttpDelete("{id:int}", Name ="DeleteVilla")]
 
-        public IActionResult DeleteVilla(int id) 
+        public async Task<IActionResult> DeleteVilla(int id) 
         {
             if (id ==0)
             {
                 return BadRequest();
             }
-            var villa = _db.Villas.FirstOrDefault(u => u.Id == id);
+            var villa = await _db.Villas.FirstOrDefaultAsync(u => u.Id == id);
             if (villa == null)
             {
                 return NotFound();
             }
             _db.Villas.Remove(villa);
-            _db.SaveChanges();
+            _db.SaveChangesAsync();
             return NoContent();
         }
 
         [HttpPut("{id:int}", Name = "UpdateVilla")]
 
-        public IActionResult UpdateVilla(int id, [FromBody]VillaDTO villaDTO)
+        public IActionResult UpdateVilla(int id, [FromBody]VillaUpdateDTO villaDTO)
         {
             if (villaDTO == null || id != villaDTO.Id) {
                 return BadRequest();
@@ -123,15 +118,15 @@ namespace MagicTube.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
 
-        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaDTO> patchDTO)
+        public IActionResult UpdatePartialVilla(int id, JsonPatchDocument<VillaUpdateDTO> patchDTO)
         {
             if (patchDTO == null || id == 0)
             {
                 return BadRequest();
             }
             var villa = _db.Villas.FirstOrDefault(u=>u.Id == id);
-            
-            VillaDTO villaDTO = new()
+
+            VillaUpdateDTO villaDTO = new()
             {
                 Amenity = villa.Amenity,
                 Details = villa.Details,
