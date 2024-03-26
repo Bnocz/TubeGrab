@@ -1,6 +1,8 @@
+using MagicTube;
 using MagicTube.Data;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +12,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 {
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
-builder.Host.UseSerilog();
+builder.Services.AddAutoMapper(typeof(MappingConfig));
 builder.Services.AddControllers(option=>
 {
     option.ReturnHttpNotAcceptable = true;
