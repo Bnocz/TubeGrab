@@ -3,6 +3,8 @@ using MagicTube.Data;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using AutoMapper;
+using MagicTube.Repository.IRepository;
+using MagicTube.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultSQLConnection"));
 });
 builder.Services.AddAutoMapper(typeof(MappingConfig));
+builder.Services.AddScoped<IVillaRepository, VillaRepository>();
+builder.Services.AddScoped<IVillaNumberRepository, VillaNumberRepository>();
 builder.Services.AddControllers(option=>
 {
     option.ReturnHttpNotAcceptable = true;

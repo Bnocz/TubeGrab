@@ -1,9 +1,12 @@
 ﻿using MagicTube.Models;
+using System.Linq.Expressions;
 
 namespace MagicTube.Repository.IRepository
 {
-    public interface IVillaRepository
+    public interface IVillaRepository : IRepository<Villa>
     {
-        Task Create(Villa entity);
+
+        Task<Villa> Update(Villa entity);
+
     }
 }

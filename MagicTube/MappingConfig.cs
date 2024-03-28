@@ -10,8 +10,12 @@ namespace MagicTube
         {
             CreateMap<Villa, VillaDTO>();
             CreateMap<VillaDTO, Villa>();
-            CreateMap<VillaDTO, VillaCreateDTO>().ReverseMap();
-            CreateMap<VillaDTO, VillaUpdateDTO>().ReverseMap();
+            CreateMap<Villa, VillaCreateDTO>().ReverseMap();
+            CreateMap<Villa, VillaUpdateDTO>().ReverseMap();
+
+            CreateMap<VillaNumber, VillaNumberCreateDTO>().ReverseMap();
+            CreateMap<VillaNumber, VillaNumberUpdateDTO>().ReverseMap();
+            CreateMap<VillaNumber, VillaNumberDTO>().ReverseMap();
         }
     }
 }
